@@ -1,0 +1,17 @@
+********** Basic Identifiers*********
+Name
+Address
+Date of Birth
+Mobile Number
+Email
+Photo
+Fingerprint
+Signature
+QR & Barcodes
+
+********** Government Identifiers*****
+PAN
+AADHAR Number
+Passport
+ABHA (Health Id)
+Voter ID
