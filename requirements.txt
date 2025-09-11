@@ -5,5 +5,4 @@ paddleocr
 numpy
 ultralytics
 transformers
-retinaface
 python-multipart
