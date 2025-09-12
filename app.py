@@ -84,7 +84,6 @@ async def upload_file(file: UploadFile = File(...), filters: str = Form(...)):
         # Detect all PII regex patterns first, then filter based on selected filters
         if structured_text:
             pii_detections = detect_pii_regex(structured_text)
-            print(pii_detections)
             # Filter based on selected filters
             filtered_pii = []
             for detection in pii_detections:

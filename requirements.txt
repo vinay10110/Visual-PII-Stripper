@@ -1,8 +1,12 @@
 fastapi
 uvicorn
 pillow
+paddlepaddle
 paddleocr
 numpy
 ultralytics
 transformers
 python-multipart
+insightface
+opencv-python
+onnxruntime
