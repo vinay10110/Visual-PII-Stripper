@@ -1,0 +1,21 @@
+fastapi
+uvicorn
+pillow
+paddlepaddle
+paddleocr
+numpy
+ultralytics
+transformers
+python-multipart
+insightface
+opencv-python
+onnxruntime
+onnxruntime-gpu
+
+# PyTorch (CUDA 11.8 builds)
+--index-url https://download.pytorch.org/whl/cu118
+--extra-index-url https://pypi.org/simple
+torch==2.7.1+cu118
+torchvision==0.22.1+cu118
+torchaudio==2.7.1+cu118
+

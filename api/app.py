@@ -37,7 +37,6 @@ ocr = PaddleOCR(
     use_textline_orientation=False,
 )
 
-
 app = FastAPI(title="Visual PII Stripper", description="API for detecting and blurring PII in images")
 
 # Add CORS middleware
