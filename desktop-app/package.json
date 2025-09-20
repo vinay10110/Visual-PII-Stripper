@@ -10,7 +10,7 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@chakra-ui/react": "^3.27.0",
+    "@chakra-ui/react": "^2.10.9",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@tauri-apps/plugin-dialog": "^2.4.0",

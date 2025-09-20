@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { readFile, writeFile, readDir, mkdir, exists } from "@tauri-apps/plugin-fs";
 import { downloadDir } from "@tauri-apps/api/path";
@@ -7,7 +7,6 @@ import { useAutoSetup } from "./hooks/useAutoSetup";
 import {
   Box,
   Button,
-  Card,
   Container,
   Flex,
   Grid,
@@ -16,7 +15,7 @@ import {
   Progress,
   Text,
   VStack,
-  Separator,
+  Divider,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import {
@@ -228,37 +227,7 @@ function App() {
   const [showFilters, setShowFilters] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   
-  // Backend startup loading state - only show when backend exists and needs startup
-  const [isBackendStarting, setIsBackendStarting] = useState<boolean>(false);
-  const [startupProgress, setStartupProgress] = useState<number>(0);
-
-  // Handle backend startup loading - only when setup is complete and backend exists
-  useEffect(() => {
-    // Only start the 30-second timer if auto-setup is not running (meaning backend exists)
-    if (!isAutoSetupRunning) {
-      console.log("🚀 Backend exists, starting 30-second startup timer...");
-      setIsBackendStarting(true);
-      
-      const startupDuration = 30000; // 30 seconds
-      const updateInterval = 100; // Update every 100ms for smooth progress
-      const totalSteps = startupDuration / updateInterval;
-      let currentStep = 0;
-
-      const progressTimer = setInterval(() => {
-        currentStep++;
-        const progress = (currentStep / totalSteps) * 100;
-        setStartupProgress(progress);
-
-        if (currentStep >= totalSteps) {
-          clearInterval(progressTimer);
-          setIsBackendStarting(false);
-          console.log("✅ Backend startup timer completed");
-        }
-      }, updateInterval);
-
-      return () => clearInterval(progressTimer);
-    }
-  }, [isAutoSetupRunning]); // Trigger when auto-setup status changes
+  // Remove the separate backend starting logic since auto-setup handles everything
 
   const [piiFilters, setPiiFilters] = useState<PIIFilters>({
     Name: true,
@@ -427,63 +396,6 @@ function App() {
               </Text>
             </VStack>
 
-            {/* Backend Startup Loading Screen */}
-            {isBackendStarting && (
-              <MotionCard
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-              >
-                <Card.Root
-                  bg="whiteAlpha.900"
-                  backdropFilter="blur(20px)"
-                  shadow="2xl"
-                  borderRadius="2xl"
-                  border="1px solid"
-                  borderColor="blue.200"
-                >
-                  <Card.Body>
-                    <VStack gap={6} py={8}>
-                      <Box position="relative">
-                        <FiLoader 
-                          size={48} 
-                          style={{ 
-                            animation: "spin 1s linear infinite",
-                            color: "#0967D2" 
-                          }} 
-                        />
-                      </Box>
-                      <VStack gap={2} textAlign="center">
-                        <Heading size="lg" color="blue.600">
-                          Starting Backend Server
-                        </Heading>
-                        <Text color="gray.600" maxW="md">
-                          Initializing AI models and backend services...
-                        </Text>
-                        <Text fontSize="sm" color="orange.600" fontWeight="semibold" maxW="md" textAlign="center">
-                          ⚠️ Please do not close this window. Initial setup may take a few minutes.
-                        </Text>
-                        <Box w="full" maxW="md" mt={4}>
-                          <Progress.Root
-                            value={startupProgress}
-                            colorScheme="blue"
-                            size="lg"
-                            borderRadius="full"
-                          >
-                            <Progress.Track bg="gray.200">
-                              <Progress.Range />
-                            </Progress.Track>
-                          </Progress.Root>
-                          <Text fontSize="sm" color="gray.500" mt={2} textAlign="center">
-                            {Math.round(startupProgress)}% Complete
-                          </Text>
-                        </Box>
-                      </VStack>
-                    </VStack>
-                  </Card.Body>
-                </Card.Root>
-              </MotionCard>
-            )}
 
             {/* Auto-Setup Loading Screen */}
             {isAutoSetupRunning && (
@@ -492,7 +404,7 @@ function App() {
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5 }}
               >
-                <Card.Root
+                <Box
                   bg="whiteAlpha.900"
                   backdropFilter="blur(20px)"
                   shadow="2xl"
@@ -500,7 +412,7 @@ function App() {
                   border="1px solid"
                   borderColor="blue.200"
                 >
-                  <Card.Body>
+                  <Box p={6}>
                     <VStack gap={6} py={8}>
                       <Box position="relative">
                         <FiLoader 
@@ -513,27 +425,27 @@ function App() {
                       </Box>
                       <VStack gap={2} textAlign="center">
                         <Heading size="lg" color="blue.600">
-                          Setting Up Backend
+                          {autoSetupMessage.includes('starting server') ? 'Starting Backend Server' : 'Setting Up Backend'}
                         </Heading>
                         <Text color="gray.600" maxW="md">
                           {autoSetupMessage}
                         </Text>
                         <Text fontSize="sm" color="orange.600" fontWeight="semibold" maxW="md" textAlign="center">
-                          ⚠️ Please do not close this window. Downloading models may take a few minutes.
+                          ⚠️ Please do not close this window. {autoSetupMessage.includes('starting server') ? 'Server startup may take a moment.' : 'Downloading models may take a few minutes.'}
                         </Text>
                         <Text fontSize="sm" color="gray.500" mt={4}>
                           Setting up backend components...
                         </Text>
                       </VStack>
                     </VStack>
-                  </Card.Body>
-                </Card.Root>
+                  </Box>
+                </Box>
               </MotionCard>
             )}
 
 
-            {/* Selection Buttons - Only show when backend startup and setup are complete */}
-            {!isBackendStarting && !isAutoSetupRunning && (
+            {/* Selection Buttons - Only show when setup is complete */}
+            {!isAutoSetupRunning && (
               <MotionCard
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -541,13 +453,13 @@ function App() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
               >
-                <Card.Root
+                <Box
                   bg="whiteAlpha.700"
                   backdropFilter="blur(12px)"
                   shadow="xl"
                   borderRadius="2xl"
                 >
-                  <Card.Body>
+                  <Box p={6}>
                     <VStack gap={6}>
                       <Heading size="lg" textAlign="center" color="gray.700">
                         Choose Your Input
@@ -579,26 +491,26 @@ function App() {
                         </Button>
                       </HStack>
                     </VStack>
-                  </Card.Body>
-                </Card.Root>
+                  </Box>
+                </Box>
               </MotionCard>
             )}
 
             {/* Selection Display */}
-            {!isBackendStarting && (selectedFile || selectedFolder) && (
+            {!isAutoSetupRunning && (selectedFile || selectedFolder) && (
               <MotionCard
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
                 whileHover={{ scale: 1.01 }}
               >
-                <Card.Root
+                <Box
                   bg="whiteAlpha.700"
                   backdropFilter="blur(12px)"
                   shadow="lg"
                   borderRadius="2xl"
                 >
-                  <Card.Body>
+                  <Box p={6}>
                     <VStack gap={4} align="stretch">
                       {selectedFile && (
                         <Box>
@@ -670,7 +582,7 @@ function App() {
                             {batchProgress.current} / {batchProgress.total}{" "}
                             images
                           </Text>
-                          <Progress.Root
+                          <Progress
                             value={
                               (batchProgress.current / batchProgress.total) *
                               100
@@ -679,32 +591,29 @@ function App() {
                             size="lg"
                             borderRadius="full"
                           >
-                            <Progress.Track bg="gray.200">
-                              <Progress.Range />
-                            </Progress.Track>
-                          </Progress.Root>
+                          </Progress>
                         </Box>
                       )}
                     </VStack>
-                  </Card.Body>
-                </Card.Root>
+                  </Box>
+                </Box>
               </MotionCard>
             )}
 
             {/* PII Filters */}
-            {!isBackendStarting && showFilters && (
+            {!isAutoSetupRunning && showFilters && (
               <MotionCard
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
               >
-                <Card.Root
+                <Box
                   bg="whiteAlpha.700"
                   backdropFilter="blur(14px)"
                   shadow="2xl"
                   borderRadius="2xl"
                 >
-                  <Card.Body>
+                  <Box p={6}>
                     <VStack gap={6} align="stretch">
                       <Flex justify="space-between" align="center">
                         <Heading size="lg" color="gray.700">
@@ -841,7 +750,7 @@ function App() {
                         </Box>
                       </Grid>
 
-                      <Separator />
+                      <Divider />
 
                       {/* Action Button */}
                       <Flex justify="center">
@@ -888,8 +797,8 @@ function App() {
                         </Button>
                       </Flex>
                     </VStack>
-                  </Card.Body>
-                </Card.Root>
+                  </Box>
+                </Box>
               </MotionCard>
             )}
           </VStack>

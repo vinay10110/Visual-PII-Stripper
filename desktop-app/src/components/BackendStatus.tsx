@@ -39,7 +39,7 @@ export const BackendStatus: React.FC = () => {
           <Text fontSize="lg" fontWeight="semibold">
             Backend Status
           </Text>
-          <Badge colorPalette={getStatusColor()} variant="solid">
+          <Badge colorScheme={getStatusColor()} variant="solid">
             {getStatusText()}
           </Badge>
         </Stack>
@@ -102,9 +102,9 @@ export const BackendStatus: React.FC = () => {
             {!status.installed && (
               <Button
                 size="sm"
-                colorPalette="blue"
+                colorScheme="blue"
                 onClick={installBackend}
-                loading={status.installing}
+                isLoading={status.installing}
               >
                 {status.installing ? 'Installing...' : 'Install Backend'}
               </Button>
@@ -113,9 +113,9 @@ export const BackendStatus: React.FC = () => {
             {status.installed && !status.running && (
               <Button
                 size="sm"
-                colorPalette="green"
+                colorScheme="green"
                 onClick={startBackend}
-                loading={status.starting}
+                isLoading={status.starting}
               >
                 {status.starting ? 'Starting...' : 'Start Backend'}
               </Button>

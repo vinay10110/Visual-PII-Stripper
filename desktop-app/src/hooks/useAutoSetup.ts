@@ -23,7 +23,7 @@ export const useAutoSetup = () => {
       
       if (isInstalled) {
         console.log("✅ Backend already installed, starting it...");
-        setIsSetupComplete(true);
+        setIsSetupRunning(true); // Show loading screen while starting
         setSetupMessage('Backend already installed, starting server...');
         
         // Backend exists, so start it directly
@@ -31,9 +31,12 @@ export const useAutoSetup = () => {
           const result = await invoke('start_backend') as string;
           console.log("✅ Backend started successfully:", result);
           setSetupMessage('Backend started successfully');
+          setIsSetupComplete(true);
         } catch (error) {
           console.error("❌ Failed to start backend:", error);
           setSetupMessage(`Failed to start backend: ${error}`);
+        } finally {
+          setIsSetupRunning(false); // Hide loading screen
         }
         return;
       }
