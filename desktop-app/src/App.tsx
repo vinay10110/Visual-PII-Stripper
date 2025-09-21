@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { readFile, writeFile, readDir, mkdir, exists } from "@tauri-apps/plugin-fs";
 import { downloadDir } from "@tauri-apps/api/path";
@@ -218,7 +218,7 @@ function App() {
   const [showLogViewer, setShowLogViewer] = useState(false);
   
   // Auto-setup hook - runs on first launch
-  const { isSetupRunning: isAutoSetupRunning, setupMessage: autoSetupMessage } = useAutoSetup();
+  const { isSetupRunning: isAutoSetupRunning, setupMessage: autoSetupMessage, isSetupComplete } = useAutoSetup();
   const [isBatchProcessing, setIsBatchProcessing] = useState<boolean>(false);
   const [batchProgress, setBatchProgress] = useState<{
     current: number;
@@ -227,7 +227,43 @@ function App() {
   const [showFilters, setShowFilters] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   
-  // Remove the separate backend starting logic since auto-setup handles everything
+  // 30-second backend startup loading - only after auto-setup completes
+  const [isBackendStarting, setIsBackendStarting] = useState<boolean>(false);
+  const [startupProgress, setStartupProgress] = useState<number>(0);
+  const hasAutoSetupCompleted = useRef<boolean>(false);
+
+  // Start 30-second timer ONLY after auto-setup completes (not on initial load)
+  useEffect(() => {
+    // Track if auto-setup has completed at least once
+    if (isSetupComplete && !hasAutoSetupCompleted.current) {
+      hasAutoSetupCompleted.current = true;
+    }
+
+    // Start 30-second timer only after auto-setup completes AND stops running
+    if (hasAutoSetupCompleted.current && !isAutoSetupRunning && !isBackendStarting) {
+      console.log("🚀 Auto-setup completed, starting 30-second backend startup timer...");
+      setIsBackendStarting(true);
+      
+      const startupDuration = 50000; // 30 seconds
+      const updateInterval = 100; // Update every 100ms for smooth progress
+      const totalSteps = startupDuration / updateInterval;
+      let currentStep = 0;
+
+      const progressTimer = setInterval(() => {
+        currentStep++;
+        const progress = (currentStep / totalSteps) * 100;
+        setStartupProgress(progress);
+
+        if (currentStep >= totalSteps) {
+          clearInterval(progressTimer);
+          setIsBackendStarting(false);
+          console.log("✅ Backend startup timer completed");
+        }
+      }, updateInterval);
+
+      return () => clearInterval(progressTimer);
+    }
+  }, [isAutoSetupRunning, isSetupComplete]); // Remove isBackendStarting from dependencies to prevent loop
 
   const [piiFilters, setPiiFilters] = useState<PIIFilters>({
     Name: true,
@@ -396,6 +432,60 @@ function App() {
               </Text>
             </VStack>
 
+            {/* Backend Startup Loading Screen - Shows AFTER auto-setup completes */}
+            {isBackendStarting && (
+              <MotionCard
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Box
+                  bg="whiteAlpha.900"
+                  backdropFilter="blur(20px)"
+                  shadow="2xl"
+                  borderRadius="2xl"
+                  border="1px solid"
+                  borderColor="blue.200"
+                >
+                  <Box p={6}>
+                    <VStack gap={6} py={8}>
+                      <Box position="relative">
+                        <FiLoader 
+                          size={48} 
+                          style={{ 
+                            animation: "spin 1s linear infinite",
+                            color: "#0967D2" 
+                          }} 
+                        />
+                      </Box>
+                      <VStack gap={2} textAlign="center">
+                        <Heading size="lg" color="blue.600">
+                          Starting Backend Server
+                        </Heading>
+                        <Text color="gray.600" maxW="md">
+                          Initializing AI models and backend services...
+                        </Text>
+                        <Text fontSize="sm" color="orange.600" fontWeight="semibold" maxW="md" textAlign="center">
+                          ⚠️ Please do not close this window. Server startup may take a moment.
+                        </Text>
+                        <Box w="full" maxW="md" mt={4}>
+                          <Progress
+                            value={startupProgress}
+                            colorScheme="blue"
+                            size="lg"
+                            borderRadius="full"
+                          >
+                          </Progress>
+                          <Text fontSize="sm" color="gray.500" mt={2} textAlign="center">
+                            {Math.round(startupProgress)}% Complete
+                          </Text>
+                        </Box>
+                      </VStack>
+                    </VStack>
+                  </Box>
+                </Box>
+              </MotionCard>
+            )}
 
             {/* Auto-Setup Loading Screen */}
             {isAutoSetupRunning && (
@@ -444,8 +534,8 @@ function App() {
             )}
 
 
-            {/* Selection Buttons - Only show when setup is complete */}
-            {!isAutoSetupRunning && (
+            {/* Selection Buttons - Only show when both setup and startup are complete */}
+            {!isAutoSetupRunning && !isBackendStarting && (
               <MotionCard
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -497,7 +587,7 @@ function App() {
             )}
 
             {/* Selection Display */}
-            {!isAutoSetupRunning && (selectedFile || selectedFolder) && (
+            {!isAutoSetupRunning && !isBackendStarting && (selectedFile || selectedFolder) && (
               <MotionCard
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -601,7 +691,7 @@ function App() {
             )}
 
             {/* PII Filters */}
-            {!isAutoSetupRunning && showFilters && (
+            {!isAutoSetupRunning && !isBackendStarting && showFilters && (
               <MotionCard
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
