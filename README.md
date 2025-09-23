@@ -5,10 +5,6 @@ A desktop application that detects and redacts Personally Identifiable Informati
 
 ## Installation
 
-- Option A — Windows MSI (recommended)
-
-  ## Download
-
 [Download visual-pii-stripper_0.1.0_x64_en-US.msi](https://github.com/vinay10110/Visual-PII-Stripper/raw/master/visual-pii-stripper_0.1.0_x64_en-US.msi)
 
 
@@ -17,25 +13,13 @@ A desktop application that detects and redacts Personally Identifiable Informati
   - After setup completes, everything runs locally and the app can work fully offline.
   - If GitHub restricts direct file downloads due to size, use the project Releases page to download the MSI.
 
-- Option B — Run from source (developers)
+## Redaction Example (Before vs After)
 
-  Prerequisites: Node.js 18+, Rust (MSVC) and Tauri prerequisites.
+| Before | After |
+| --- | --- |
+| <img src="screenshots/Patient%20HealthCare%20Record_page-0001.jpg" alt="Before - original" width="420" /> | <img src="screenshots/processed_Patient%20HealthCare%20Record_page-0001.png" alt="After - redacted" width="420" /> |
 
-  Steps:
-  ```bash
-  # From the project root
-  cd desktop-app
-  npm i
-  npm run tauri dev
-  ```
-
-## Before & After
-
-<p align="left">
-  <img src="screenshots/Patient%20HealthCare%20Record_page-0001.jpg" alt="Before - original" width="420" />
-  <img src="screenshots/processed_Patient%20HealthCare%20Record_page-0001.png" alt="After - redacted" width="420" />
-</p>
-<sub>Images resized for README clarity.</sub>
+  <sub>Images resized for README clarity.</sub>
 
 
 ## Key Features
@@ -62,10 +46,10 @@ A desktop application that detects and redacts Personally Identifiable Informati
 ## Google Colab Notebook
 The file `visual_pii_stripper.ipynb` is a Google Colab notebook used for experimentation and demonstrations. You can upload it to your Google Drive and open with Colab, or open it directly in Colab if viewing from a GitHub remote. This notebook is not required to run the desktop app.
 
-## Acknowledgements
-- PaddleOCR
-- IndicNER (ai4bharat)
-- InsightFace
-- YOLO-based detectors
-- React, Chakra UI, Tauri
+## Tech Stack
+- App shell: Tauri 2 (Rust)
+- Frontend: React 19, TypeScript, Vite, Chakra UI, Framer Motion, React Icons
+- AI/ML: PaddleOCR, IndicNER (ai4bharat), InsightFace, YOLO-based detectors
 
+## Acknowledgements
+Developed during "Nassom: Privacy - Trust by Design".
