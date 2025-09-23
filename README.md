@@ -34,7 +34,7 @@ A desktop application that detects and redacts Personally Identifiable Informati
 
 ## Quick Start (End Users)
 
-1. Install via MSI (Option A) or run from source (Option B) as described above.
+1. Install via MSI as described above.
 2. Open the app.
 3. Choose your input:
    - Single image file (PNG/JPG), or
